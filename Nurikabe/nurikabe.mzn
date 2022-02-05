@@ -12,12 +12,13 @@
 int: length = 6;
 
 array[1..length,1..length] of int: init=[|0,0,0,0,0,0|
-                                            0,1,0,0,0,0|
-                                            5,0,3,0,0,0|
-                                            0,0,0,0,0,0|
-                                            0,0,2,0,0,6|
-                                            0,0,0,0,0,0|];
-                                          
+                                          0,1,0,0,0,0|
+                                          5,0,3,0,0,0|
+                                          0,0,0,0,0,0|
+                                          0,0,2,0,0,6|
+                                          0,0,0,0,0,0|];
+                                      
+                                                      
 array[1..length,1..length] of var 0..1: solution;  
 
 % BOTH RULES CAN BE REMOVED BY INITIALIZING SOLUTION WITH INIT, THEREFORE SOLUTION WON'T BE ONLY ZERO/UNO
@@ -39,6 +40,15 @@ predicate island_path() =
     } in island>=(init[i,j])
   );
 
+%Credo serva per non avere troppi 1
+var int: sum_init = sum(i,j in 1..length)(init[i,j]);
+var int: sum_sol = sum(i,j in 1..length)(solution[i,j]);
+constraint sum_sol=sum_init;
+
+%Black cells path
+constraint forall(i,j in 1..length-1 where solution[i,j]= 0) (solution[i+1,j]= 0 \/ solution[i,j+1]= 0);
+constraint forall(j in 1..length-1 where solution[length,j]=0) (solution[length,j+1]= 0);
+constraint forall(i in 1..length-1 where solution[i,length]=0) (solution[i+1,length]= 0);
 
 %A cell can be white iff another near cell (not near by diagonals) it's white, border excluded
 constraint forall(i,j in 1..length where solution[i,j]=1 /\ i!=1 /\ i!=length /\ j!=1 /\ j!=length) 
