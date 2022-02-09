@@ -18,3 +18,8 @@ Skills: Pathfinding, Arrays, Graphs, Logic
 Difficulty: Hard
 
 Skills: Greedy algorithms, Scheduling
+
+## Contributors
+Made by Morotti Daniele, Procino Edoardo, Valente Andrea
+
+[Report of the project](https://www.overleaf.com/read/btsjjfdcxxkb)
