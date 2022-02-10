@@ -8,78 +8,129 @@
 - When completed, all water cells form a continuous shape (again, diagonals do not count).
 - Each given grid has a unique solution.
 */
-
-int: length = 6;
-
-array[1..length,1..length] of int: init=[|0,0,0,0,0,0|
-                                          0,1,0,0,0,0|
-                                          5,0,3,0,0,0|
-                                          0,0,0,0,0,0|
-                                          0,0,2,0,0,6|
-                                          0,0,0,0,0,0|];
-                                      
+int: length = 7;
+array[1..length,1..length] of 0..9: init=[|0,0,0,0,0,0,9
+                                          |0,0,0,0,0,0,0
+                                          |0,0,0,6,0,0,0
+                                          |0,0,0,0,4,0,0
+                                          |0,0,0,3,0,0,0
+                                          |0,0,0,0,0,0,0
+                                          |0,0,0,0,0,0,1|];
                                                       
-array[1..length,1..length] of var 0..1: solution;  
+array[1..length,1..length] of var 0..9: solution;
 
-% BOTH RULES CAN BE REMOVED BY INITIALIZING SOLUTION WITH INIT, THEREFORE SOLUTION WON'T BE ONLY ZERO/UNO
-%Where there is a number > 0, put 1(white) in the solution
-constraint forall(i, j in 1..length where init[i,j]>0) (solution[i,j]=1);
-%In the solution all cells must contains 0 or 1
-constraint forall(i in 1..length) (forall (j in 1..length) (solution[i,j]=1 \/ solution[i,j]=0));
-
-% Avoid a black area larger than a 2x2
-predicate avoid_black_squares() = 
-  forall (i,j in 1..length-1 where solution[i,j]=0) (not(solution[i+1,j]=0 /\ solution[i,j+1]=0 /\ solution[i+1,j+1]=0));
+% The solution must have the same clues as the input
+constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]=init[i,j]);
 
 % Island creation by checking the square around him
-predicate island_path() = 
-  forall(i,j in 1..length where init[i,j]>1) ( % >1 because the case with 1 is satisfied with the previous constraint               
+predicate island_path() =
+  % Checking on >1 because the case with 1 doesn't need any 
+  forall(i,j in 1..length where init[i,j]>=1) (             
     let {
-      var int: island = sum(k,z in -(init[i,j]-1)..(init[i,j]-1) where ((i-k)>=1 /\ (i-k)<=length /\ (j-z)>=1 /\ (j-z)<=length)) 
-        (solution[i-k,j-z])
-    } in island>=(init[i,j])
+      var int: island = sum(k,z in -(init[i,j]-1)..(init[i,j]-1) where ((i+k)>=1 /\ (i+k)<=length /\ (j+z)>=1 /\ (j+z)<=length)) 
+        (solution[i+k,j+z] == init[i,j])
+    } in island==(init[i,j])
   );
-
-%Credo serva per non avere troppi 1
-var int: sum_init = sum(i,j in 1..length)(init[i,j]);
-var int: sum_sol = sum(i,j in 1..length)(solution[i,j]);
-constraint sum_sol=sum_init;
-
-%Black cells path
-constraint forall(i,j in 1..length-1 where solution[i,j]= 0) (solution[i+1,j]= 0 \/ solution[i,j+1]= 0);
-constraint forall(j in 1..length-1 where solution[length,j]=0) (solution[length,j+1]= 0);
-constraint forall(i in 1..length-1 where solution[i,length]=0) (solution[i+1,length]= 0);
-
-%A cell can be white iff another near cell (not near by diagonals) it's white, border excluded
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ i!=1 /\ i!=length /\ j!=1 /\ j!=length) 
-  (solution[i-1,j]=1 \/ solution[i,j+1]=1 \/ solution[i+1,j]=1 \/ solution[i,j-1]=1);
-
-%A cell can be white iff another near cell (not near by diagonals) it's white, conditions for border, corners exluded
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ i=1 /\ j!=1 /\ j!=length) (solution[i,j+1]=1 \/ solution[i+1,j]=1 \/ solution[i,j-1]=1);
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ i=length /\ j!=1 /\ j!=length) (solution[i-1,j]=1 \/ solution[i,j+1]=1 \/ solution[i,j-1]=1);
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ j=1 /\ i!=1 /\ i!=length) (solution[i-1,j]=1 \/ solution[i,j+1]=1 \/ solution[i+1,j]=1);
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ j=length /\ i!=1 /\ i!=length) (solution[i-1,j]=1 \/ solution[i+1,j]=1 \/ solution[i,j-1]=1);
-
-%A cell can be white iff another near cell (not near by diagonals) it's white, conditions for corners
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ i=1 /\ j=1) (solution[i,j+1]=1 \/ solution[i+1,j]=1);
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ i=length /\ j=1) (solution[i-1,j]=1 \/ solution[i,j+1]=1);
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ j=length /\ i=1) (solution[i,j-1]=1 \/ solution[i+1,j]=1);
-constraint forall(i,j in 1..length where solution[i,j]=1 /\ j=length /\ i=length) (solution[i-1,j]=1 \/ solution[i,j-1]=1);
-
-constraint avoid_black_squares();
 constraint island_path();
 
-%TODO idee per dire che le caselle nere devono essere tutte collegate? Ho provato con i stessi vincoli che ho messo per le caselle biance, ovvero che ogni casella ne deve avere una delle stesso colore sopra, sotto, a destra o a sinistra, ma non funziona per le caselle nere (per quelle bianche credo sia ok)
-/*constraint forall(i in 1..length) (forall (j in 1..length where solution[i,j]=0) (forall(k in 1..length) (forall (z in 1..length where i!=k /\ j!=z /\ solution[k,z]=0) (
-                    
-                        
-                      
-                    
-                    )));*/
+% Checking each island's cell has at least an adjacent cell with the same value, that is a continuous path of the entire island
+% direction of rows:
+% -1 => U
+% +1 => D
+function var int: vertical_island_path(int: i, int: j, var int: val, var int: residual, int: direction) =  
+  if residual > 0 /\ i >= 1 /\ i <= length then
+    if solution[i,j] == val then
+      1 + vertical_island_path(i+direction, j, val, residual-1, direction)
+      else 0
+    endif
+    else 0   
+  endif;
+  
+% direction of columns:
+% -1 => L
+% +1 => R
+function var int: horizontal_island_path(int: i, int: j, var int: val, var int: residual, int: direction) = 
+  if residual > 0 /\ j >= 1 /\ j <= length then
+    if solution[i,j] == val then
+      1 + 
+      vertical_island_path(i-1, j, val, residual-1, -1) + 
+      vertical_island_path(i+1, j, val, residual-1, 1) + 
+      horizontal_island_path(i, j+direction, val, residual-1, direction)
+      else 0
+    endif
+    else 0   
+  endif;
 
-%TODO non so se quanto dico qua è effettivamente vero o non serve per i vincoli di prima: Dato che ogni isola deve essere isolata dalle altre ho pensato che potremmo codificare il bianco non con 1 come è ora, ma con un numero diverso per ogni isola, così poi basta controllare che ogni cella che non è bianca abbia sopra, sotto a destra e a sinistra o lo stesso numero oppure 0 (cella nera). Il problema è che (credo) non si possa usare il numero del clue, cioè, se in un quadratino ho 6 non posso usare il 6 per la sua isola perché se poi ho un'altra isola vicina sempre con il 6 le due si portrebbero fondere e non va bene
+predicate island_continuous() =
+  forall(i,j in 1..length where init[i,j]>1) (
+    (
+      horizontal_island_path(i, j-1, init[i,j], init[i,j]-1, -1) + 
+      horizontal_island_path(i, j+1, init[i,j], init[i,j]-1, 1) +
+      vertical_island_path(i-1, j, init[i,j], init[i,j]-1, -1) + 
+      vertical_island_path(i+1, j, init[i,j], init[i,j]-1, 1)
+    ) == (init[i,j]-1)
+  );  
+constraint island_continuous();
+
+% Checking each cell of an island is surrounded by another cell of same island or by a water  
+predicate check_neighborhood(int: i,int: j, var int: val) =
+    (if (i-1)>=1  then solution[i-1,j] == val \/ solution[i-1,j] == 0 else true endif) /\
+    (if (i+1)<=length then solution[i+1,j] == val \/ solution[i+1,j] == 0 else true endif) /\
+    (if (j-1)>=1 then solution[i,j-1] == val \/ solution[i,j-1] == 0 else true endif) /\
+    (if (j+1)<=length then solution[i,j+1] == val \/ solution[i,j+1] == 0 else true endif)	;
+
+predicate island_isolated() =
+  forall(i,j in 1..length where solution[i,j]>1)
+    (check_neighborhood(i,j, solution[i,j]));
+constraint island_isolated();	
 
 
+% Avoid a water area larger than a 2x2
+predicate avoid_water_squares() = 
+  forall (i,j in 1..length-1 where solution[i,j]==0) (not(solution[i+1,j]=0 /\ solution[i,j+1]=0 /\ solution[i+1,j+1]=0));
+constraint avoid_water_squares();
+
+
+% Water must be continuous
+predicate vertical_water_path(int: i, int: j, int: direction, int: u, int: v) =  
+  if i >= 1 /\ i <= length then
+    if i == u /\ j == v then
+      true
+      else if solution[i,j] == 0 then
+        vertical_water_path(i+direction, j, direction, u, v)
+        else false
+      endif
+    endif
+    else false  
+  endif;
+
+predicate horizontal_water_path(int: i, int: j, int: direction, int: u, int: v) = 
+  if j >= 1 /\ j <= length then
+    if i == u /\ j == v then
+      true
+      else if solution[i,j] == 0 then
+        vertical_water_path(i-1, j, -1, u, v) \/ 
+        vertical_water_path(i+1, j, 1, u, v) \/
+        horizontal_water_path(i, j+direction, direction, u,v)
+        else false
+      endif
+    endif
+    else false  
+  endif;
+
+predicate water_continuous() =
+  forall(i,j in 1..length where solution[i,j]==0) (
+    forall (u,v in 1..length where (solution[u,v]==0 /\ u != i /\ v != j))
+      (
+        horizontal_water_path(i, j-1, -1, u, v) \/
+        horizontal_water_path(i, j+1, 1, u, v) \/
+        vertical_water_path(i-1, j, -1, u, v) \/
+        vertical_water_path(i+1, j, 1, u, v)
+      )
+  );       
+% constraint water_continuous();
+
+constraint sum(i,j in 1..length)(init[i,j] * init[i,j])==sum(i,j in 1..length)(solution[i,j]);
 
 
 solve satisfy;
