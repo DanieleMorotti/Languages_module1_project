@@ -34,41 +34,50 @@ predicate island_path() =
 constraint island_path();
 
 % Checking each island's cell has at least an adjacent cell with the same value, that is a continuous path of the entire island
-% direction of rows:
-% -1 => U
-% +1 => D
-function var int: vertical_island_path(int: i, int: j, var int: val, var int: residual, int: direction) =  
-  if residual > 0 /\ i >= 1 /\ i <= length then
-    if solution[i,j] == val then
-      1 + vertical_island_path(i+direction, j, val, residual-1, direction)
-      else 0
+predicate double_check(int: i, int: j, int: dir_ver, int: dir_hor, int: res, int: val) =
+  if res == 0 then true
+    else if i >= 1 /\ i <= length /\ j >= 1 /\ j <= length then 
+      if solution[i,j] == val then
+        double_check(i, j+dir_hor, dir_ver, dir_hor, res-1, val) \/
+        double_check(i+dir_ver, j, dir_ver, dir_hor, res-1, val)
+        else false
+      endif
+      else false
     endif
-    else 0   
   endif;
-  
-% direction of columns:
-% -1 => L
-% +1 => R
-function var int: horizontal_island_path(int: i, int: j, var int: val, var int: residual, int: direction) = 
-  if residual > 0 /\ j >= 1 /\ j <= length then
-    if solution[i,j] == val then
-      1 + 
-      vertical_island_path(i-1, j, val, residual-1, -1) + 
-      vertical_island_path(i+1, j, val, residual-1, 1) + 
-      horizontal_island_path(i, j+direction, val, residual-1, direction)
-      else 0
+
+predicate triple_horizontal_check(int: i, int: j, int: dir, int: res, int: val) =
+  if res == 0 then true
+    else if j >= 1 /\ j <= length then 
+      if solution[i,j] == val then
+        triple_horizontal_check(i, j+dir, dir, res-1, val) \/
+        double_check(i-1, j, -1, dir, res-1, val) \/
+        double_check(i+1, j, 1, dir, res-1, val)
+        else false
+      endif
+      else false
     endif
-    else 0   
+  endif;
+
+predicate triple_vertical_check(int: i, int: j, int: dir, int: res, int: val) =
+  if res == 0 then true
+    else if i >= 1 /\ i <= length then 
+      if solution[i,j] == val then
+        triple_vertical_check(i+dir, j, dir, res-1, val) \/ 
+        double_check(i, j-1, dir, -1, res-1, val) \/
+        double_check(i, j+1, dir, 1, res-1, val)
+        else false
+      endif
+      else false
+    endif
   endif;
 
 predicate island_continuous() =
-  forall(i,j in 1..length where init[i,j]>1) (
-    (
-      horizontal_island_path(i, j-1, init[i,j], init[i,j]-1, -1) + 
-      horizontal_island_path(i, j+1, init[i,j], init[i,j]-1, 1) +
-      vertical_island_path(i-1, j, init[i,j], init[i,j]-1, -1) + 
-      vertical_island_path(i+1, j, init[i,j], init[i,j]-1, 1)
-    ) == (init[i,j]-1)
+  forall(i,j in 1..length where init[i,j]>=1) (
+    triple_horizontal_check(i, j-1, -1, init[i,j]-1, init[i,j]) \/
+    triple_horizontal_check(i, j+1, 1, init[i,j]-1, init[i,j]) \/
+    triple_vertical_check(i-1, j, -1, init[i,j]-1, init[i,j]) \/
+    triple_vertical_check(i+1, j, 1, init[i,j]-1, init[i,j])
   );  
 constraint island_continuous();
 
