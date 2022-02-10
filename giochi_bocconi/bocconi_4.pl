@@ -1,15 +1,14 @@
 :- use_module(library(clpfd)).
 
-
 % Used to get a list of digits from a number
 numToList(NUM,[LIST|[]]):-
-   NUM < 10,
-   LIST is NUM,
+   NUM #< 10,
+   LIST #= NUM,
    !.
 numToList(NUM,LIST):-
-   P is NUM // 10,
+   P #= NUM // 10,
    numToList(P,LIST1),
-   END is (NUM mod 10), 
+   END #= (NUM mod 10), 
    append(LIST1,[END] ,LIST).
 
 bocconi_4(NUM):-
@@ -17,6 +16,7 @@ bocconi_4(NUM):-
     NUM mod 11 #= 0,
     NUM // 1000 #> 0,
     NUM // 10000 #=< 0,
-    labeling([up], [NUM]),
     numToList(NUM, DIGITS),
-    all_distinct(DIGITS).
+    all_distinct(DIGITS),
+    labeling([up], [NUM]).
+
