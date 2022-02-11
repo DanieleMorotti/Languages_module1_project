@@ -1,22 +1,105 @@
-include "globals.mzn";
+/*
+         Ex. 2 Bocconi
+The man enters in the labyrinth in the first node of the array. It needs to arrive 
+to the 13-th node, considering this enumeration:
+  1 2 3
+4 5 6 7 8
+   ... 
+He can pass through each node only once and we want the maximum distance he can cross.
+*/  
+include "globals.mzn"; 
 
-array[1..4, 1..5] of 0..1: adj_mat;
-array[1..30] of var 0..30: path;
-solve satisfy;
-constraint exists_path(1,13);
-  
-adj_mat = [|
-    0, 1, 1, 1, 0|
-    1, 1, 1, 1, 1|
-    1, 1, 1, 1, 1|
-    0, 1, 1, 1, 0|];
+int: n = 16;
+int: num_edges = 42;
+int: start = 1;
+int: target = 13;
 
-constraint alldifferent_except_0(path);
+array[1..n] of var 0..n: x;
+array[1..num_edges, 1..2] of 1..n: graph;
 
-predicate exists_path_length(int: s, int: t, int: len) = 
-          path[1]=s /\ path[len]=t /\ forall(i in len+1..30)(path[i]=0) /\          
-          forall(i in 1..len-1)( adj_mat[path[i],path[i+1]]=1);
-          
-predicate exists_path(int: s, int: t) = forall(len in 2..30)(exists_path_length(s,t,len));
+% It is the length of the path we are considering
+var int: path_length = sum(i in 1..n) (x[i] > 0);
 
-output ["Path: " ++ show(path)];
+% y is the last element which is > 0. All elements after y is 0
+predicate last_not_0(array[int] of var int: x, var int: y) =
+  exists(i in 1..length(x)) (
+    x[i] = y /\ 
+    forall(j in i+1..n) (x[j] = 0) /\ % all elements after y are 0
+    forall(j in 1..i) (x[j] > 0) % all elements before y are > 0
+  );
+
+% Generate all possible paths
+predicate all_paths(array[int] of var int: x, array[int, 1..2] of var int: graph) =
+  forall(i in 2..length(x)) (
+    x[i] = 0 \/
+    (
+      x[i] > 0 /\ x[i-1] > 0 /\
+      % Return index set of first dimension of two-dimensional array graph
+      exists(j in 1..num_edges) (
+        (graph[j,1] = x[i-1] /\ graph[j,2] = x[i])
+        \/
+        (graph[j,1] = x[i] /\ graph[j,2] = x[i-1])
+      )
+    )
+  );
+
+% We can add path_length = n to see if we have a solution with that length
+predicate compute_solution() = 
+  alldifferent_except_0(x) /\ x[1] = start /\ 
+    last_not_0(x, target) /\ all_paths(x, graph);
+
+constraint compute_solution();
+
+%solve :: int_search(x, first_fail, indomain, complete) maximize path_length;
+solve maximize path_length;
+
+output [
+  "Path length: \(path_length) - Path cost: \((path_length-1)*10)\n x: \([x[i] | i in 1..n where fix(x[i]) > 0])\n"
+];
+
+% Graph edges
+graph = array2d(1..num_edges, 1..2, 
+   [
+      1,2,
+      1,5,
+      2,3,
+      2,6,
+      3,2,
+      3,7,
+      4,5,
+      4,9,
+      5,4,
+      5,6,
+      5,10,
+      6,2,
+      6,7,
+      6,5,
+      6,11,
+      7,3,
+      7,6,
+      7,8,
+      7,12,
+      8,7,
+      8,13,
+      9,4,
+      9,10,
+      10,5,
+      10,9,
+      10,11,
+      10,14,
+      11,6,
+      11,10,
+      11,12,
+      11,15,
+      12,7,
+      12,11,
+      12,13,
+      12,16,
+      14,10,
+      14,15,
+      15,11,
+      15,14,
+      15,16,
+      16,12,
+      16,15
+    ]);
