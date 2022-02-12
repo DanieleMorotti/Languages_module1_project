@@ -1,3 +1,0 @@
-output [show_float(6,0,int2float(solution[i,j]))++if j==length then "\n\n" else " " endif | i in 1..length, j in 1..length, ];
-int: length = 7;
-array [1..length,1..length] of int: solution;
