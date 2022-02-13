@@ -28,7 +28,8 @@ predicate basic_solution() = forall (i in 1..N, j in 1..N where i != j)(
 	)
 );
 
-var int: res = sum(used);
+constraint basic_solution();
+var int: res = sum(poss);
 solve maximize res;
 
 % Print the solution 
