@@ -1,14 +1,21 @@
 include "all_different.mzn";
 
-int: length = 5;
-array[1..length, 1..length] of 0..9: init=[|0,0,0,0,0,
-                                          |1,0,0,0,0,
-                                          |0,0,0,0,3,
-                                          |0,0,0,4,0,
-                                          |2,0,0,0,0,
-                                          |];
+int: length = 7;
+array[1..length, 1..length] of 0..9: init=[|0,0,0,0,0,0,9
+                                          |0,0,0,0,0,0,0
+                                          |0,0,0,6,0,0,0
+                                          |0,0,0,0,4,0,0
+                                          |0,0,0,3,0,0,0
+                                          |0,0,0,0,0,0,0
+                                          |0,0,0,0,0,0,1|];
 
-array[1..length,1..length] of var 0..9: solution;
+array[1..length,1..length] of var 0..9: solution/* = [|9,9,9,9,9,9,9
+                                                    |0,0,0,0,0,9,9
+                                                    |0,6,6,6,0,0,0
+                                                    |0,6,0,0,4,4,4
+                                                    |0,6,0,3,0,0,4
+                                                    |0,6,0,3,3,0,0
+                                                    |0,0,0,0,0,0,1|]*/;
 
 /* MESSAGGIO:
  Non c'è il vincolo per far sì che tutti gli zeri siano continui perchè tanto non va neanche quello che siano attaccate le
@@ -19,7 +26,7 @@ predicate adjacency(int:i1, int:j1, int:i2, int:j2) =
   (abs(i1 - i2) + abs(j1 - j2)) == 1;
   
 % Adjacent cells need to be of the same number or 0
-predicate check_adj() = forall(i1,j1,i2,j2 in 1..length where adjacency(i1,j1,i2,j2))(
+predicate check_adj() = forall(i1,j1,i2,j2 in 1..length where adjacency(i1,j1,i2,j2) /\ solution[i1,j1] > 0)(
   (solution[i1,j1] == solution[i2,j2]) \/ (solution[i1,j1]== 0 \/ solution[i2,j2]==0)
 );
 
@@ -58,9 +65,16 @@ predicate couple(int:i1, int:j1, int:i2, int:j2) =
   sum(p,q in 1..length where adjacency(i1,j1,p,q) \/ adjacency(i2,j2,p,q))(
     solution[p,q]
   ) == 0;
+  
+predicate couple_alt(int:i, int:j) = 
+  % If the sum of all the adjacent cells to (i1,j1),(i2,j2) is equal to 0 we have an island of 2 elements for a number > 2
+  sum(p,q in 1..length where adjacency(i,j,p,q))(
+    1
+  ) > 1;
 
-constraint forall(i,j in 1..length where solution[i,j] > 2)(
-  forall(p,q in 1..length where adjacency(i,j,p,q) /\ solution[p,q] == solution[i,j])(not(couple(i,j,p,q))));
+constraint forall(i,j in 1..length where solution[i,j] > 1)(
+%   forall(p,q in 1..length where adjacency(i,j,p,q) /\ solution[p,q] == solution[i,j])(not(couple(i,j,p,q)) \/ not(couple(i,j,p,q))));
+  forall(p,q in 1..length where adjacency(i,j,p,q) /\ solution[p,q] == solution[i,j])(couple_alt(i,j) \/ couple_alt(p,q)));
   
   
 constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]=init[i,j]);
