@@ -100,9 +100,36 @@ predicate water_cells_number() =
     } in sum_island == length * length - all_island_cells();
 
 
+
+
+predicate island_continuous_a(int: i, var int: j, var int: u, var int: v, var int: val) =
+    (i=u /\ (v=j-1 \/ v = j+1)) \/ (j=v /\ (u=i-1 \/ u=i+1)) \/
+    if j-1>0 then if solution[i,j-1]=val then island_continuous_a(i,j-1,u,v,val) else false endif else false endif \/
+    if i+1<=length then if solution[i+1,j]=val then island_continuous_a(i+1,j,u,v,val) else false endif else false endif; 
+ 
+predicate island_continuous_b(int: i, var int: j, var int: u, var int: v, var int: val) =
+    (i=u /\ (v=j-1 \/ v = j+1)) \/ (j=v /\ (u=i-1 \/ u=i+1)) \/
+    if i-1>0 then if solution[i-1,j]=val then island_continuous_b(i-1,j,u,v,val) else false endif else false endif \/
+    if j+1<=length then if solution[i,j+1]=val then island_continuous_b(i,j+1,u,v,val) else false endif else false endif;          
+    
+%bottom, right    
+predicate island_continuous_c(int: i, var int: j, var int: u, var int: v, var int: val) =
+    (i=u /\ (v=j-1 \/ v = j+1)) \/ (j=v /\ (u=i-1 \/ u=i+1)) \/
+    if j+1<=length then if solution[i,j+1]=val then island_continuous_c(i,j+1,u,v,val) else false endif else false endif \/
+    if i+1<=length then if solution[i+1,j]=val then island_continuous_c(i+1,j,u,v,val) else false endif else false endif; 
+
+%top, left 
+predicate island_continuous_d(int: i, var int: j, var int: u, var int: v, var int: val) =
+    (i=u /\ (v=j-1 \/ v = j+1)) \/ (j=v /\ (u=i-1 \/ u=i+1)) \/
+    if i-1>0 then if solution[i-1,j]=val then island_continuous_d(i-1,j,u,v,val) else false endif else false endif \/
+    if j-1>0 then if solution[i,j-1]=val then island_continuous_d(i,j-1,u,v,val) else false endif else false endif;  
+    
+    
+    
+
 %%% CONSTRAINTS
 constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]=init[i,j]);
-
+constraint forall(i,j,u,v in 1..length where solution[i,j]>1 /\ (solution[u,v]==solution[i,j] /\ (u != i \/ v != j))) (island_continuous_a(i,j,u,v,solution[i,j]) \/ island_continuous_b(i,j,u,v,solution[i,j]) \/ island_continuous_c(i,j,u,v,solution[i,j]) \/ island_continuous_d(i,j,u,v,solution[i,j]));
 constraint island_isolated();	
 constraint island_count_cells();
 constraint check_islands();
