@@ -1,13 +1,13 @@
 include "all_different.mzn";
 
-int: length = 7;
-array[1..length, 1..length] of 0..9: init=[|0,0,0,0,0,0,9
-                                          |0,0,0,0,0,0,0
-                                          |0,0,0,6,0,0,0
-                                          |0,0,0,0,0,4,0
-                                          |0,0,0,3,0,0,0
-                                          |0,0,0,0,0,0,0
-                                          |0,0,0,0,0,0,1|];
+% int: length = 7;
+% array[1..length, 1..length] of 0..9: init=[|0,0,0,0,0,0,9
+%                                           |0,0,0,0,0,0,0
+%                                           |0,0,0,6,0,0,0
+%                                           |0,0,0,0,0,4,0
+%                                           |0,0,0,3,0,0,0
+%                                           |0,0,0,0,0,0,0
+%                                           |0,0,0,0,0,0,1|];
 
 % array[1..length,1..length] of var 0..9: solution = [|9,9,9,9,9,9,9
 %                                                     |0,0,0,0,0,9,9
@@ -16,6 +16,13 @@ array[1..length, 1..length] of 0..9: init=[|0,0,0,0,0,0,9
 %                                                     |0,6,0,3,0,0,4
 %                                                     |0,6,0,3,3,0,0
 %                                                     |0,0,0,0,0,0,1|];
+
+int: length = 5;
+array[1..length, 1..length] of 0..9: init=[|0,0,0,0,0
+                                           |1,0,0,0,0
+                                           |0,0,0,0,3
+                                           |0,0,0,4,0
+                                           |2,0,0,0,0|];
 array[1..length,1..length] of var 0..9: solution;
 
 predicate in_bounds(int: i, int: j) =
@@ -100,6 +107,17 @@ predicate water_cells_number() =
     } in sum_island == length * length - all_island_cells();
 
 
+%%% NOT SURE ARE CORRECT
+function var int: encode_point(var int: i, var int: j) =
+  (i - 1) * length + (j-1);
+  
+predicate left(int: i, int: j, var set of int: visited, int: u, int: v, int: res) =
+  res >= 0 /\ ((i == u /\ j == v) \/
+  exists (di,dj in -1..1 where k_adjacency(1,i,j,di,dj) /\ not (encode_point(i+di, j+dj) in visited)
+    /\ solution[u,v] == solution[i+di,j+dj]) (
+    left(i+di, j+dj, {encode_point(i,j)} union visited, u, v, res-1) 
+  ));
+  
 %%% CONSTRAINTS
 constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]=init[i,j]);
 
@@ -113,16 +131,17 @@ constraint vertically_adjacents();
 constraint water_not_squares();
 constraint water_cells_number();
 
-%%% Lasciate ogne speranza, voi ch’intrate
-predicate couple(int:i, int:j) = 
-  % If the sum of all the adjacent cells to (i1,j1),(i2,j2) is equal to 0 we have an island of 2 elements for a number > 2
-  sum(p,q in 1..length where adjacency(i,j,p,q))(
-    1
-  ) > 1;
+constraint forall(i,j in 1..length where init[i,j] > 1) (
+  forall(u,v in 1..length where init[i,j] == solution[u,v] /\ (i != u \/ j != v)) (
+    left(i,j,{}, u,v, init[i,j]-1)
+  )
+);
 
-constraint forall(i,j in 1..length where solution[i,j] > 1)(
-%   forall(p,q in 1..length where adjacency(i,j,p,q) /\ solution[p,q] == solution[i,j])(not(couple(i,j,p,q)) \/ not(couple(i,j,p,q))));
-  forall(p,q in 1..length where adjacency(i,j,p,q) /\ solution[p,q] == solution[i,j])(couple(i,j) \/ couple(p,q)));
+constraint exists(i,j in 1..length where solution[i,j] == 0) (
+  forall(u,v in 1..length where solution[u,v] == 0 /\ (i != u \/ j != v)) (
+    left(i,j,{}, u,v, length * 2)
+  )
+);
 
 solve satisfy;
 
