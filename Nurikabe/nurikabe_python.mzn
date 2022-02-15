@@ -30,9 +30,6 @@ predicate k_adjacency(int: distance_k, int:i, int:j, int:di, int:dj) =
 function var int: encode_point(var int: i, var int: j) =
   (i - 1) * length + (j-1);
   
-predicate init_unique(int: val) =
-  sum(k in 1..length) (count(init[k,..], val)) == 1;
-  
 % Checking the surface (island or water) is continuous
 predicate surface_continuous(int: i, int: j, var set of int: visited, int: u, int: v, var int: res) =
   res > 0 /\ (
@@ -121,9 +118,6 @@ predicate water_continuous() =
     )
   );
   
-%%% ASSERTION
-constraint forall(i,j in 1..length where init[i,j]>0) (assert(init_unique(init[i,j]), "init is not valid"));
-
 %%% CONSTRAINTS
 constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]==init[i,j]);
 
