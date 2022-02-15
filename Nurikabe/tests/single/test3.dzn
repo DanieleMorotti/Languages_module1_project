@@ -1,5 +1,4 @@
 length = 5;
-cells = {0,1,2,3,5};
 init = array2d(1..length, 1..length, [2,0,5,0,0,
                                       0,0,0,0,0,
                                       0,0,0,0,0,

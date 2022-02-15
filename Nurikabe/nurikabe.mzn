@@ -1,28 +1,15 @@
 % PARAMETERS
 int: length;
-set of int: cells;
-array[1..length, 1..length] of cells: init_uncoded;     
-% array[1..length, 1..length] of cells: real_sol; 
+array[1..length, 1..length] of 0..9: init;     
 
 % USER DEFINED PARAMETERS
 int: water_cells = length * length - all_island_cells();
 int: water_limit = water_cells div 2;
 
-int: digits_encoding = 2;
-int: pow_digit = pow(10, digits_encoding-1);
-
-% VARIABLES
-array[1..length, 1..length] of cells: init;                                  
-array[1..length,1..length] of var cells: solution;
+% VARIABLES                                 
+array[1..length,1..length] of var 0..max(init): solution;
 
 %%% USEFUL PREDICATES AND FUNCTIONS
-% Returning the value/size of the island
-function int: island_clue(int: val) =
-  val div pow_digit; 
-  
-function var int: island_clue_var(var int: val) =
-  val div pow_digit;
-
 % Checking if a point is inside the grid of size length X length
 predicate in_bounds(int: i, int: j) =
   i <= length /\ i >= 1 /\ j <= length /\ j >= 1;
@@ -47,10 +34,13 @@ predicate surface_continuous(int: i, int: j, var set of int: visited, int: u, in
 
 % The total number of islands cells
 function int: all_island_cells() =
-  sum (i,j in 1..length where init[i,j] > 0) (island_clue(init[i,j]));
+  sum (i,j in 1..length where init[i,j] > 0) (init[i,j]);
   
 function var int: count_cells(int: val) =
   sum(k in 1..length) (count(solution[k,..], val));
+  
+predicate init_unique(int: val) =
+  sum(k in 1..length) (count(init[k,..], val)) == 1;
   
   
 %% ISLAND CONSTRAINTS
@@ -60,21 +50,21 @@ predicate check_neighborhood(int: i,int: j) =
     solution[i+di,j+dj] == solution[i,j] \/ solution[i+di,j+dj] == 0
   );
 predicate island_isolated() =
-  forall(i,j in 1..length where island_clue_var(solution[i,j]) > 1)
+  forall(i,j in 1..length where solution[i,j] > 1)
     (check_neighborhood(i,j));
  
        
 % The number of cells for each island is equal to the clue of that island
 predicate island_count_cells() = 
   forall(i,j in 1..length where init[i,j] > 0)(
-    count_cells(init[i,j]) == island_clue(init[i,j])
+    count_cells(init[i,j]) == init[i,j]
   );
 
 % Each island must have a continuous shape
 predicate island_continuous() = 
-  forall(i,j in 1..length where island_clue(init[i,j]) > 1) (
+  forall(i,j in 1..length where init[i,j] > 1) (
     forall(u,v in 1..length where init[i,j] == solution[u,v] /\ (i != u \/ j != v)) (
-      surface_continuous(i,j,{}, u,v, island_clue(init[i,j])-1)
+      surface_continuous(i,j,{}, u,v, init[i,j]-1)
     )
   );
   
@@ -119,11 +109,13 @@ predicate water_count_cells() =
 predicate water_continuous() = 
   exists(i,j in 1..length where solution[i,j] == 0) (
     forall(u,v in 1..length where solution[u,v] == 0 /\ (i != u \/ j != v)) (
-      surface_continuous(i,j,{}, u,v, water_limit)
+      surface_continuous(i,j,{}, u,v, water_limit-1)
     )
   );
   
-  
+%%% ASSERTION
+constraint forall(i,j in 1..length where init[i,j]>0) (assert(init_unique(init[i,j]), "init is not valid"));
+
 %%% CONSTRAINTS
 constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]==init[i,j]);
 
@@ -143,7 +135,7 @@ constraint vertically_adjacents();
 solve :: int_search(solution, first_fail, indomain_min) satisfy;
 % solve satisfy;
 
-output [ show_float(4,0,solution[i,j] div pow_digit) ++ 
+output [ show_float(4,0,solution[i,j]) ++ 
          if j == length then "\n\n" else " " endif |
          i in 1..length, j in 1..length
          ];
