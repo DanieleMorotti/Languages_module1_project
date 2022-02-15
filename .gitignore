@@ -1,0 +1,4 @@
+# Python cache and environment
+__pycache__/
+.env
+
