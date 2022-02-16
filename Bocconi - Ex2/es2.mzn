@@ -9,10 +9,10 @@ He can pass through each node only once and we want the maximum distance he can 
 */  
 include "globals.mzn"; 
 
-int: n = 16;
-int: num_edges = 42;
-int: start = 1;
-int: target = 13;
+int: n;
+int: num_edges;
+int: start;
+int: target;
 
 array[1..n] of var 0..n: x;
 array[1..num_edges, 1..2] of 1..n: graph;
@@ -56,50 +56,3 @@ solve maximize path_length;
 output [
   "Path length: \(path_length) - Path cost: \((path_length-1)*10)\n x: \([x[i] | i in 1..n where fix(x[i]) > 0])\n"
 ];
-
-% Graph edges
-graph = array2d(1..num_edges, 1..2, 
-   [
-      1,2,
-      1,5,
-      2,3,
-      2,6,
-      3,2,
-      3,7,
-      4,5,
-      4,9,
-      5,4,
-      5,6,
-      5,10,
-      6,2,
-      6,7,
-      6,5,
-      6,11,
-      7,3,
-      7,6,
-      7,8,
-      7,12,
-      8,7,
-      8,13,
-      9,4,
-      9,10,
-      10,5,
-      10,9,
-      10,11,
-      10,14,
-      11,6,
-      11,10,
-      11,12,
-      11,15,
-      12,7,
-      12,11,
-      12,13,
-      12,16,
-      14,10,
-      14,15,
-      15,11,
-      15,14,
-      15,16,
-      16,12,
-      16,15
-    ]);
