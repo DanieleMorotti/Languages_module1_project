@@ -3,7 +3,7 @@ import time
 
 # This function read the input from the desired test and encode it in a new matrix
 def multi_puzzle(test_name: str) :
-    input_data = pymzn.dzn2dict(f"./tests/multi/{test_name}.dzn")
+    input_data = pymzn.dzn2dict(f"./Tests/{test_name}.dzn")
     init : list = input_data["init"]
     cells_found = {}
     
@@ -23,7 +23,7 @@ def multi_puzzle(test_name: str) :
     return input_data
 
 def single_puzzle(test_name: str) :
-    input_data = pymzn.dzn2dict(f"./tests/single/{test_name}.dzn")
+    input_data = pymzn.dzn2dict(f"./Tests/{test_name}.dzn")
     input_data["digits_encoding"] = 1
     return input_data
           
