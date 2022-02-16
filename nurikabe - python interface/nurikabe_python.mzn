@@ -47,6 +47,8 @@ function var int: all_island_cells() =
 function var int: count_cells(int: val) =
   sum(k in 1..length) (count(solution[k,..], val));
   
+predicate init_unique(int: val) =
+  sum(k in 1..length) (count(init[k,..], val)) == 1;
   
 %% ISLAND CONSTRAINTS
 % Checking each cell of an island is surrounded by another cell of same island or by a water  
@@ -117,7 +119,10 @@ predicate water_continuous() =
       surface_continuous(i,j,{}, u,v, water_limit-1)
     )
   );
-  
+
+%%% ASSERTION
+constraint forall(i,j in 1..length where init[i,j]>0) (assert(init_unique(init[i,j]), "init is not valid"));
+
 %%% CONSTRAINTS
 constraint forall(i,j in 1..length where init[i,j]>0) (solution[i,j]==init[i,j]);
 
