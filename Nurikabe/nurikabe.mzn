@@ -109,7 +109,7 @@ predicate water_count_cells() =
 predicate water_continuous() = 
   exists(i,j in 1..length where solution[i,j] == 0) (
     forall(u,v in 1..length where solution[u,v] == 0 /\ (i != u \/ j != v)) (
-      surface_continuous(i,j,{}, u,v, water_limit-1)
+      surface_continuous(i,j,{}, u,v, water_limit)
     )
   );
   

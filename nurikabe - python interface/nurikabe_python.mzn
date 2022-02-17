@@ -116,7 +116,7 @@ predicate water_count_cells() =
 predicate water_continuous() = 
   exists(i,j in 1..length where solution[i,j] == 0) (
     forall(u,v in 1..length where solution[u,v] == 0 /\ (i != u \/ j != v)) (
-      surface_continuous(i,j,{}, u,v, water_limit-1)
+      surface_continuous(i,j,{}, u,v, water_limit)
     )
   );
 
@@ -139,8 +139,8 @@ constraint diagonally_adjacents();
 constraint horizontally_adjacents();
 constraint vertically_adjacents();
 
-% solve :: int_search(solution, first_fail, indomain_min) satisfy;
-solve satisfy;
+solve :: int_search(solution, first_fail, indomain_min) satisfy;
+% solve satisfy;
 
 output [ show_float(4,0,solution[i,j] div pow_digit) ++ 
          if j == length then "\n\n" else " " endif |
