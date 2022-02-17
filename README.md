@@ -27,7 +27,7 @@ The flag `--m` is used to run the script with a test in which the input matrix c
 
 We have added a `--o` flag to optimize the solver, because using this we narrow the domain of the solution matrix such that we prune the search space.
 
-
+The proposed test files with a `multi` suffix represent an input matrix with islands of the same size.
 
 ### Warning
 This implementation of Nurikabe runs indefinitely if the input matrix is larger than a 5x5 matrix.
