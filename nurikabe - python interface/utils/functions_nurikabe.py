@@ -64,5 +64,5 @@ def execute_model(input_data: dict):
                 print("\n")
     except IndexError:
         print(output)
-    print(f"and it has been found in {end_time-start_time}.")
+    print(f"and it has been found in {round(end_time-start_time,3)} seconds.")
     
