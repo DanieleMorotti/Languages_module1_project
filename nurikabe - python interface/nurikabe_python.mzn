@@ -139,8 +139,8 @@ constraint diagonally_adjacents();
 constraint horizontally_adjacents();
 constraint vertically_adjacents();
 
-solve :: int_search(solution, first_fail, indomain_min) satisfy;
-% solve satisfy;
+% solve :: int_search(solution, first_fail, indomain_min) satisfy;
+solve satisfy;
 
 output [ show_float(4,0,solution[i,j] div pow_digit) ++ 
          if j == length then "\n\n" else " " endif |

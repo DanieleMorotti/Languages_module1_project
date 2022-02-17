@@ -13,7 +13,7 @@ def multi_puzzle(test_name: str) :
             if val > 0:
                 inc = 1
                 if val in cells_found:
-                    cells_found[val] = inc + 1
+                    cells_found[val] = cells_found[val] + 1
                     inc = cells_found[val]
                 else:
                     cells_found[val] = 1
