@@ -29,4 +29,4 @@ constraint forall (i in match)
   (check_occurence(i, N1) xor check_occurence(i, N2));
     
 solve minimize N;
-output [ show(N1) ++ " " ++ show(N2) ++ " " ++ show(N)] ;
+output ["N^3: "++ show(N1) ++ "  N^4: " ++ show(N2) ++ "  N: " ++ show(N)] ;
