@@ -1,4 +1,4 @@
-# Project of Languages of Artificial Intelligence (Module 1)
+# Project of Languages and Algorithms for AI (Module 1)
 
 ## Bocconi Exercises and solutions
 We have decided to solve the most interesting exercises of Bocconi's Mathematical Games. In particular we have done the exercises 2, 4, 7, 11, 12, 17 in [MiniZinc](https://www.minizinc.org/) and the exercises 4, 7, 17 in [Prolog](https://www.swi-prolog.org/) using the `clpdf` module.
