@@ -33,5 +33,5 @@ The proposed test files with a `multi` suffix represent an input matrix with isl
 This implementation of Nurikabe runs indefinitely if the input matrix is larger than a 5x5 matrix.
 
 
-## Contributors
-Made by Morotti Daniele, Procino Edoardo, Valente Andrea
+## Authors
+Made by Daniele Morotti, [Edoardo Procino](https://github.com/edoproch), [Andrea Valente](https://github.com/Valendrew)
